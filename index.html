@@ -8,11 +8,12 @@
         font-family: Arial;
         text-align: center;
         margin-top: 100px;
-        background-color: #f4f4f4;
+        background-color: green;
+        color: black;
       }
 
       .container {
-        background: white;
+        background: green;
         padding: 30px;
         border-radius: 10px;
         width: 300px;
@@ -30,7 +31,7 @@
         padding: 10px;
         width: 100%;
         background-color: black;
-        color: white;
+        color: green;
         border: none;
         cursor: pointer;
       }
@@ -44,30 +45,61 @@
   <body>
 
     <div class="container">
-      <h1 id="title">Welcome</h1>
+      <h1 id="title">Sign Up</h1>
 
-      <input type="text" id="nameInput" placeholder="Enter your name">
+      <div id="signupForm">
+        <input type="text" id="nameInput" placeholder="Enter your name">
 
-      <button onclick="saveName()">Save</button>
+        <input type="email" id="emailInput" placeholder="Enter your email">
+
+        <input type="password" id="passwordInput" placeholder="Enter your password">
+
+        <button onclick="signUp()">Sign Up</button>
+      </div>
     </div>
 
     <script>
-      // Load saved name when page opens
+      // Check if logged in (using sessionStorage for demo)
       window.onload = function() {
-        var savedName = localStorage.getItem("username");
-        if (savedName) {
-          document.getElementById("title").innerText = "Welcome " + savedName;
+        const loggedInUser = sessionStorage.getItem('user');
+        if (loggedInUser) {
+          const user = JSON.parse(loggedInUser);
+          document.getElementById("title").innerText = `Welcome to the littest illest party ever,
+           ${user.name}!`;
+          document.getElementById("signupForm").style.display = "none";
         }
       }
 
-      function saveName() {
-        var name = document.getElementById("nameInput").value;
+      async function signUp() {
+        const name = document.getElementById("nameInput").value;
+        const email = document.getElementById("emailInput").value;
+        const password = document.getElementById("passwordInput").value;
 
-        // Save to browser storage
-        localStorage.setItem("username", name);
+        if (!name || !email || !password) {
+          alert("Please fill in all fields.");
+          return;
+        }
 
-        // Update UI
-        document.getElementById("title").innerText = "Welcome " + name;
+        try {
+          const response = await fetch('/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password })
+          });
+
+          const result = await response.json();
+          if (response.ok) {
+            alert(result.message);
+            // Simulate login
+            sessionStorage.setItem('user', JSON.stringify({ name, email }));
+            document.getElementById("title").innerText = "Welcome " + name + "!";
+            document.getElementById("signupForm").style.display = "none";
+          } else {
+            alert(result.error);
+          }
+        } catch (error) {
+          alert("Error: " + error.message);
+        }
       }
     </script>
 
